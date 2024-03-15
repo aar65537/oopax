@@ -1,0 +1,45 @@
+{
+	"name": "oopax",
+	"remoteUser": "root",
+	"workspaceMount": "",
+
+	"build": {
+		"dockerfile": "containerfile",
+		"args": {
+			"version": "3.12"
+		}
+	},
+
+	"runArgs": [
+		"--cap-drop=ALL",
+		"--device=nvidia.com/gpu=all",
+		"--volume=${localWorkspaceFolder}:/workspaces/${localWorkspaceFolderBasename}:Z"
+	],
+
+	"securityOpt": [
+		"no-new-privileges",
+		"label=type:container_runtime_t"
+	],
+
+	"postCreateCommand": "python -m pip install -e /workspaces/${localWorkspaceFolderBasename}",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"charliermarsh.ruff",
+				"eamodio.gitlens",
+				"ms-python.python",
+				"ms-python.mypy-type-checker",
+				"redhat.vscode-yaml",
+				"tamasfe.even-better-toml"
+			],
+			"settings": {
+				"mypy-type-checker.ignorePatterns": [
+					"local/*"
+				],
+				"mypy-type-checker.importStrategy": "fromEnvironment",
+				"python.editor.defaultFormatter": "charliermarsh.ruff"
+			}
+		}
+	}
+}

@@ -1,0 +1,15 @@
+FROM cgr.dev/chainguard/wolfi-base
+
+ARG version
+RUN apk add python-${version} py${version}-pip \
+    && python -m pip install --no-cache-dir "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+RUN apk add git gnu-libiconv zsh \
+    && git clone https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh \
+    && git clone https://github.com/zsh-users/zsh-autosuggestions /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions \
+    && git clone https://github.com/zsh-users/zsh-syntax-highlighting /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting \
+    && ln -s /usr/bin/gnu-iconv /usr/bin/iconv
+
+COPY .zshrc /root
+
+ENV SHELL /usr/bin/zsh
