@@ -12,20 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oopax.functools import (
-    auto_vmap,
-    auto_vmap_key,
-    capture_update,
-    consume_key,
-    strip_output,
-)
-from oopax.types import MapTree
 
-__all__ = [
-    "MapTree",
-    "auto_vmap",
-    "auto_vmap_key",
-    "capture_update",
-    "consume_key",
-    "strip_output",
+import jax
+import jax.numpy as jnp
+import pytest
+from oopax.examples import DiceRoller
+
+pytestmark = [
+    pytest.mark.parametrize("jit", [True, False]),
 ]
+
+
+def main() -> None:
+    key = jax.random.PRNGKey(0)
+    weights = jnp.arange(60).reshape(10, 6) % 6
+    roller = DiceRoller(key, weights=weights)
+    for _ in range(10):
+        roller, roll = roller.roll()
+        print(roll)
+        print(roller.hist)
+        print()
+    roller = roller.reset()
+    print(roller.hist)
+
+
+if __name__ == "__main__":
+    main()

@@ -12,20 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oopax.functools import (
-    auto_vmap,
-    auto_vmap_key,
-    capture_update,
-    consume_key,
-    strip_output,
-)
-from oopax.types import MapTree
+from oopax.examples.dice_roller import DiceRoller
 
-__all__ = [
-    "MapTree",
-    "auto_vmap",
-    "auto_vmap_key",
-    "capture_update",
-    "consume_key",
-    "strip_output",
-]
+__all__ = ["DiceRoller"]

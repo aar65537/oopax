@@ -21,7 +21,7 @@
 		"label=type:container_runtime_t"
 	],
 
-	"postCreateCommand": "python -m pip install -e /workspaces/${localWorkspaceFolderBasename}",
+	"postCreateCommand": "python -m pip install -e /workspaces/${localWorkspaceFolderBasename}[dev]",
 
 	"customizations": {
 		"vscode": {

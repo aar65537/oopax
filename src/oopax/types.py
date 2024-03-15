@@ -12,20 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oopax.functools import (
-    auto_vmap,
-    auto_vmap_key,
-    capture_update,
-    consume_key,
-    strip_output,
-)
-from oopax.types import MapTree
+from collections.abc import Iterable, Mapping
+from typing import ParamSpec, TypeAlias, TypeVar, TypeVarTuple
+
+from jaxtyping import Array, PRNGKeyArray, PyTree
+
+FlatTree: TypeAlias = Iterable[PyTree]
+MapTree: TypeAlias = Mapping[str, PyTree]
+
+T = TypeVar("T")
+U = TypeVar("U")
+P = ParamSpec("P")
+Ts = TypeVarTuple("Ts")
 
 __all__ = [
+    "Array",
+    "FlatTree",
     "MapTree",
-    "auto_vmap",
-    "auto_vmap_key",
-    "capture_update",
-    "consume_key",
-    "strip_output",
+    "P",
+    "PRNGKeyArray",
+    "PyTree",
+    "T",
+    "Ts",
+    "U",
 ]
