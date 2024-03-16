@@ -25,7 +25,6 @@ class DiceRoller(eqx.Module):
     key: PRNGKeyArray
     weights: Array
     hist: Array
-    n_sides: int
 
     def __init__(
         self,
@@ -42,11 +41,14 @@ class DiceRoller(eqx.Module):
         self.weights = jax.nn.softmax(jnp.log(weights))
         self.key = jax.random.split(key, self.batch_shape)
         self.hist = jnp.zeros((*self.batch_shape, n_sides), int)
-        self.n_sides = n_sides
 
     @property
     def batch_shape(self) -> tuple[int, ...]:
         return self.weights.shape[:-1]
+
+    @property
+    def n_sides(self) -> int:
+        return self.weights.shape[-1]
 
     @eqx.filter_jit
     @oopax.strip_output
