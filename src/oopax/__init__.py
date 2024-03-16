@@ -14,7 +14,6 @@
 
 from oopax.functools import (
     auto_vmap,
-    auto_vmap_key,
     capture_update,
     consume_key,
     strip_output,
@@ -24,7 +23,6 @@ from oopax.types import MapTree
 __all__ = [
     "MapTree",
     "auto_vmap",
-    "auto_vmap_key",
     "capture_update",
     "consume_key",
     "strip_output",

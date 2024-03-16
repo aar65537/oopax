@@ -25,15 +25,18 @@ pytestmark = [
 
 def main() -> None:
     key = jax.random.PRNGKey(0)
-    weights = jnp.arange(60).reshape(10, 6) % 6
+    weights = jnp.arange(600).reshape(10, 10, 6) % 7
     roller = DiceRoller(key, weights=weights)
+    # roller = DiceRoller(key)
+    print(roller.weights.sum((0, 1)) / roller.weights.sum())
     for _ in range(10):
-        roller, roll = roller.roll()
-        print(roll)
-        print(roller.hist)
-        print()
+        roller, roll = roller.roll(10**3)
+        print(roll.shape)
+        print(roller.hist.sum((0, 1)) / roller.hist.sum())
+
+    # print(jnp.histogram(roller.hist))
     roller = roller.reset()
-    print(roller.hist)
+    print(roller.hist.sum())
 
 
 if __name__ == "__main__":

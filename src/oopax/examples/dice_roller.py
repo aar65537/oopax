@@ -39,7 +39,7 @@ class DiceRoller(eqx.Module):
         else:
             n_sides = weights.shape[-1]
 
-        self.weights = weights
+        self.weights = jax.nn.softmax(jnp.log(weights))
         self.key = jax.random.split(key, self.batch_shape)
         self.hist = jnp.zeros((*self.batch_shape, n_sides), int)
         self.n_sides = n_sides
@@ -48,18 +48,32 @@ class DiceRoller(eqx.Module):
     def batch_shape(self) -> tuple[int, ...]:
         return self.weights.shape[:-1]
 
+    @eqx.filter_jit
     @oopax.strip_output
     @oopax.capture_update
-    @oopax.auto_vmap(lambda roller: roller.batch_shape)
+    @oopax.auto_vmap
     def reset(self) -> tuple[MapTree, None]:
         return {"hist": jnp.zeros((self.n_sides,), int)}, None
 
+    @eqx.filter_jit
     @oopax.capture_update
-    @oopax.auto_vmap(lambda roller: roller.batch_shape)
+    @oopax.auto_vmap
     @oopax.consume_key
-    def roll(self, key: PRNGKeyArray) -> tuple[MapTree, Array]:
+    def roll(self, key: PRNGKeyArray, n_rolls: int = 1) -> tuple[MapTree, Array]:
+        if n_rolls < 1:
+            msg = "n_rolls must be greater than or equal to one."
+            raise ValueError(msg)
+
+        if n_rolls == 1:
+            hist, result = self._roll(self.hist, key)
+        else:
+            keys = jax.random.split(key, n_rolls)
+            hist, result = jax.lax.scan(self._roll, self.hist, keys)
+
+        return {"hist": hist}, result
+
+    def _roll(self, hist: Array, key: PRNGKeyArray) -> tuple[Array, Array]:
         result = jax.random.choice(
             key, jnp.arange(self.n_sides, dtype=int), (), p=self.weights
         )
-        hist = self.hist.at[result].add(1)
-        return {"hist": hist}, result
+        return hist.at[result].add(1), result

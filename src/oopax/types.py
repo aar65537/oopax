@@ -15,7 +15,7 @@
 from collections.abc import Iterable, Mapping
 from typing import ParamSpec, TypeAlias, TypeVar, TypeVarTuple
 
-from jaxtyping import Array, PRNGKeyArray, PyTree
+from jaxtyping import Array, ArrayLike, PRNGKeyArray, PyTree
 
 FlatTree: TypeAlias = Iterable[PyTree]
 MapTree: TypeAlias = Mapping[str, PyTree]
@@ -27,6 +27,7 @@ Ts = TypeVarTuple("Ts")
 
 __all__ = [
     "Array",
+    "ArrayLike",
     "FlatTree",
     "MapTree",
     "P",

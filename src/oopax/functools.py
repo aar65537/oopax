@@ -23,35 +23,25 @@ from oopax.types import FlatTree, MapTree, P, PRNGKeyArray, PyTree, T, Ts, U
 
 
 def auto_vmap(
-    shape_fn: Callable[..., tuple[int, ...]], **vmap_kwargs: Any
-) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    def decorator(fn: Callable[P, T]) -> Callable[P, T]:
-        @wraps(fn)
-        def inner(*args: P.args, **kwargs: P.kwargs) -> T:
-            vmap_fn = fn
-            for _ in shape_fn(*args, **kwargs):
-                vmap_fn = eqx.filter_vmap(vmap_fn, **vmap_kwargs)
-            return vmap_fn(*args, **kwargs)  # type: ignore[no-any-return]
+    fn: Callable[Concatenate[T, P], U],
+    batch_shape: str | Callable[[T], tuple[int, ...]] = "batch_shape",
+    **vmap_kwargs: Any,
+) -> Callable[Concatenate[T, P], U]:
+    if isinstance(batch_shape, str):
 
-        return inner
+        def shape_fn(module: T, /) -> tuple[int, ...]:
+            return getattr(module, batch_shape)  # type: ignore[no-any-return]
+    else:
+        shape_fn = batch_shape
 
-    return decorator
+    @wraps(fn)
+    def inner(module: T, *args: P.args, **kwargs: P.kwargs) -> U:
+        vmap_fn = fn
+        for _ in shape_fn(module):
+            vmap_fn = eqx.filter_vmap(vmap_fn, **vmap_kwargs)
+        return vmap_fn(module, *args, **kwargs)  # type: ignore[no-any-return]
 
-
-def auto_vmap_key(
-    shape_fn: Callable[..., tuple[int, ...]], *, key: str = "key", **vmap_kwargs: Any
-) -> Callable[
-    [Callable[Concatenate[T, PRNGKeyArray, P], tuple[MapTree, *Ts]]],
-    Callable[Concatenate[T, P], tuple[MapTree, *Ts]],
-]:
-    def decorator(
-        fn: Callable[Concatenate[T, PRNGKeyArray, P], tuple[MapTree, *Ts]],
-    ) -> Callable[Concatenate[T, P], tuple[MapTree, *Ts]]:
-        auto_vmap_dec = auto_vmap(shape_fn, **vmap_kwargs)
-        split_key = partial(_split_key_auto_vmap, key=key, shape_fn=shape_fn)
-        return consume_attr(auto_vmap_dec(fn), update_attr=key, split_fn=split_key)
-
-    return decorator
+    return inner
 
 
 def capture_update(
@@ -123,7 +113,7 @@ def _split_key(
     old_key: PRNGKeyArray = getattr(module, key)
     del key, module
 
-    split = auto_vmap(lambda key: key.shape[:-1])(jax.random.split)
+    split = auto_vmap(jax.random.split, lambda x: x.shape[:-1])  # type: ignore[union-attr]
     next_keys = split(old_key)
     del old_key
 
@@ -132,22 +122,3 @@ def _split_key(
     del next_keys
 
     return (next_key, sub_key)
-
-
-def _split_key_auto_vmap(
-    module: PyTree,
-    *args: Any,
-    key: str,
-    shape_fn: Callable[..., tuple[int, ...]],
-    **kwargs: Any,
-) -> tuple[PRNGKeyArray, PRNGKeyArray]:
-    old_key = getattr(module, key)
-    del key
-
-    next_key, sub_key = jax.random.split(old_key)
-    del old_key
-
-    shape = shape_fn(module, *args, **kwargs)
-    del module, args, kwargs
-
-    return next_key, jax.random.split(sub_key, shape)
