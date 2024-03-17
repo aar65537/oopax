@@ -54,8 +54,8 @@ class DiceRoller(eqx.Module):
     @oopax.strip_output
     @oopax.capture_update
     @oopax.auto_vmap
-    def reset(self) -> tuple[MapTree, None]:
-        return {"hist": jnp.zeros((self.n_sides,), int)}, None
+    def reset(self) -> tuple[MapTree]:
+        return ({"hist": jnp.zeros((self.n_sides,), int)},)
 
     @eqx.filter_jit
     @oopax.capture_update
