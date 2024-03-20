@@ -1,0 +1,17 @@
+FROM cgr.dev/chainguard/wolfi-base
+
+ARG PYTHON_VERSION
+RUN apk add git gnu-libiconv python-${PYTHON_VERSION} py${PYTHON_VERSION}-pip zsh \
+    && /sbin/ldconfig \
+    && git clone https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh \
+    && git clone https://github.com/zsh-users/zsh-autosuggestions /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions \
+    && git clone https://github.com/zsh-users/zsh-syntax-highlighting /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting \
+    && ln -s /usr/bin/gnu-iconv /usr/bin/iconv
+
+ARG WORKSPACE_FOLDER
+WORKDIR ${WORKSPACE_FOLDER}
+COPY pyproject.toml .
+RUN mkdir src && python -m pip install --no-cache-dir -e ".[dev]"
+
+COPY .devcontainer/.zshrc /root
+ENV SHELL /usr/bin/zsh

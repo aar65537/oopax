@@ -1,0 +1,8 @@
+{
+    "extensions.ignoreRecommendations": true,
+    "mypy-type-checker.ignorePatterns": [
+        "local/*"
+    ],
+    "mypy-type-checker.importStrategy": "fromEnvironment",
+    "python.editor.defaultFormatter": "charliermarsh.ruff"
+}

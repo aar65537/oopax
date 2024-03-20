@@ -1,0 +1,33 @@
+{
+	"name": "oopax",
+	"remoteUser": "root",
+	"workspaceMount": "",
+	"build": {
+		"args": {
+			"PYTHON_VERSION": "3.12",
+			"WORKSPACE_FOLDER": "/workspaces/${localWorkspaceFolderBasename}"
+		},
+		"context": "../..",
+		"dockerfile": "containerfile"
+	},
+	"runArgs": [
+		"--cap-drop=ALL",
+		"--volume=${localWorkspaceFolder}:/workspaces/${localWorkspaceFolderBasename}:Z",
+		"--volume=${localEnv:HOME}/.ssh:/root/.ssh:z"
+	],
+	"securityOpt": [
+		"no-new-privileges"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"charliermarsh.ruff",
+				"eamodio.gitlens",
+				"ms-python.python",
+				"ms-python.mypy-type-checker",
+				"redhat.vscode-yaml",
+				"tamasfe.even-better-toml"
+			]
+		}
+	}
+}
