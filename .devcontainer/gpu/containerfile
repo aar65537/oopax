@@ -4,7 +4,7 @@ ARG PYTHON_VERSION
 RUN apk add python-${PYTHON_VERSION} py${PYTHON_VERSION}-pip \
     && python -m pip install --no-cache-dir "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
-RUN apk add git gnu-libiconv zsh \
+RUN apk add git gnu-libiconv openssh zsh \
     && /sbin/ldconfig \
     && git clone https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh \
     && git clone https://github.com/zsh-users/zsh-autosuggestions /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions \
