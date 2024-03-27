@@ -1,12 +1,13 @@
 FROM cgr.dev/chainguard/wolfi-base
 
 ARG PYTHON_VERSION
-RUN apk add git gnu-libiconv openssh python-${PYTHON_VERSION} py${PYTHON_VERSION}-pip zsh \
+RUN apk add git gnu-libiconv nodejs openssh python-${PYTHON_VERSION} py${PYTHON_VERSION}-pip zsh \
     && /sbin/ldconfig \
     && git clone https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh \
     && git clone https://github.com/zsh-users/zsh-autosuggestions /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting \
-    && ln -s /usr/bin/gnu-iconv /usr/bin/iconv
+    && ln -s /usr/bin/gnu-iconv /usr/bin/iconv \
+    && npm install -g pyright
 
 ARG WORKSPACE_FOLDER
 WORKDIR ${WORKSPACE_FOLDER}
