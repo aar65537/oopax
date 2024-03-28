@@ -23,50 +23,49 @@ from oopax.types import P, T, U
 
 
 def vectorize(
-    fn: Callable[Concatenate[T, P], U],
-    *,
-    excluded: set | None = None,
     signature: str = "->()",
-) -> Callable[Concatenate[T, P], U]:
-    @wraps(fn)
-    def inner(module: T, *args: P.args, **kwargs: P.kwargs) -> U:
-        _excluded = set() if excluded is None else excluded
-        _signature = signature
+) -> Callable[[Callable[Concatenate[T, P], U]], Callable[Concatenate[T, P], U]]:
+    def decorator(fn: Callable[Concatenate[T, P], U]) -> Callable[Concatenate[T, P], U]:
+        @wraps(fn)
+        def inner(module: T, *args: P.args, **kwargs: P.kwargs) -> U:
+            _signature = signature
 
-        fields = dataclasses.fields(module)  # type: ignore
-        module_args = []
-        module_exclude = []
-
-        for field in fields:
-            if "signature" in field.metadata:
-                module_args.append(getattr(module, field.name))
-                _signature = field.metadata["signature"] + "," + _signature
-            else:
-                module_exclude.append(getattr(module, field.name))
-
-        _excluded = _excluded | kwargs.keys() | {len(module_args)}
-
-        def elementary_fn(*args: Any, **kwargs: P.kwargs) -> U:  # type: ignore
-            _module = object.__new__(module.__class__)
-
-            n_args = 0
-            n_excludes = 0
-            excludes = args[len(module_args)]
+            fields = dataclasses.fields(module)  # type: ignore
+            module_args = []
+            module_exclude = []
 
             for field in fields:
                 if "signature" in field.metadata:
-                    object.__setattr__(_module, field.name, args[n_args])  # noqa: PLC2801
-                    n_args += 1
+                    module_args.append(getattr(module, field.name))
+                    _signature = field.metadata["signature"] + "," + _signature
                 else:
-                    object.__setattr__(_module, field.name, excludes[n_excludes])  # noqa: PLC2801
-                    n_excludes += 1
+                    module_exclude.append(getattr(module, field.name))
 
-            return fn(_module, *args[len(module_args) + 1 :], **kwargs)
+            _excluded = {len(module_args)} | kwargs.keys()
 
-        vectorized_fn = jnp.vectorize(
-            elementary_fn, excluded=_excluded, signature=_signature
-        )
+            def elementary_fn(*args: Any, **kwargs: P.kwargs) -> U:  # type: ignore
+                _module = object.__new__(module.__class__)
 
-        return vectorized_fn(*module_args, module_exclude, *args, **kwargs)
+                n_args = 0
+                n_excludes = 0
+                excludes = args[len(module_args)]
 
-    return inner
+                for field in fields:
+                    if "signature" in field.metadata:
+                        object.__setattr__(_module, field.name, args[n_args])  # noqa: PLC2801
+                        n_args += 1
+                    else:
+                        object.__setattr__(_module, field.name, excludes[n_excludes])  # noqa: PLC2801
+                        n_excludes += 1
+
+                return fn(_module, *args[len(module_args) + 1 :], **kwargs)
+
+            vectorized_fn = jnp.vectorize(
+                elementary_fn, excluded=_excluded, signature=_signature
+            )
+
+            return vectorized_fn(*module_args, module_exclude, *args, **kwargs)
+
+        return inner
+
+    return decorator

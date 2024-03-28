@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import partial
-
 import jax
 import jax.numpy as jnp
 
@@ -61,7 +59,7 @@ class Dice(oopax.Module):
 
         return {"hist": hist}, result
 
-    @partial(oopax.vectorize, signature="(2)->()")
+    @oopax.vectorize("(2)->()")
     def _call(self, key: PRNGKeyArray) -> Array:
         return jax.random.choice(
             key, jnp.arange(self.n_sides, dtype=int), (), p=self.weights
