@@ -27,7 +27,7 @@ ignore = ["ANN401", "COM812","PD008","UP040","D"]
 
 [tool.ruff.lint.per-file-ignores]
 "local/*" = ["CPY"]
-"tests/*" = ["FBT001", "S101"]
+"*_test.py" = ["FBT001", "S101"]
 
 [tool.ruff.lint.flake8-copyright]
 author = "the OOPax Authors"

@@ -12,25 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from equinox import Module
+import jax
+import pytest
 
-from oopax._field import field
-from oopax._vectorize import vectorize
-from oopax.functools import (
-    auto_vmap,
-    capture_update,
-    consume_key,
-    strip_output,
-)
-from oopax.types import MapTree
+from oopax.types import PRNGKeyArray
 
-__all__ = [
-    "MapTree",
-    "Module",
-    "auto_vmap",
-    "capture_update",
-    "consume_key",
-    "field",
-    "strip_output",
-    "vectorize",
-]
+SEED = 0
+
+
+@pytest.fixture()
+def key() -> PRNGKeyArray:
+    return jax.random.PRNGKey(SEED)
+
+
+@pytest.fixture(params=[True, False], ids=["jit", "no jit"])
+def jit(request: pytest.FixtureRequest) -> bool:
+    return request.param  # type: ignore[no-any-return]

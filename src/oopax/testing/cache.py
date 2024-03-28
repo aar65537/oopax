@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import chex
+import equinox as eqx
 import jax
-import pytest
-from oopax.types import PRNGKeyArray
-
-SEED = 0
 
 
-@pytest.fixture()
-def key() -> PRNGKeyArray:
-    return jax.random.PRNGKey(SEED)
-
-
-@pytest.fixture(params=[True, False], ids=["jit", "no jit"])
-def jit(request: pytest.FixtureRequest) -> bool:
-    return request.param  # type: ignore[no-any-return]
+def clear_caches() -> None:
+    eqx.clear_caches()
+    jax.clear_caches()
+    chex.clear_trace_counter()

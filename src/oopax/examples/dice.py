@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from functools import partial
 
-import equinox as eqx
 import jax
 import jax.numpy as jnp
 
@@ -23,7 +21,7 @@ import oopax
 from oopax.types import Array, MapTree, PRNGKeyArray
 
 
-class Dice(eqx.Module):
+class Dice(oopax.Module):
     key: PRNGKeyArray
     hist: Array
     weights: Array = oopax.field(signature="(n)")
@@ -45,13 +43,11 @@ class Dice(eqx.Module):
     def n_sides(self) -> int:
         return self.weights.shape[-1]
 
-    @eqx.filter_jit
     @oopax.strip_output
     @oopax.capture_update
     def reset(self) -> tuple[MapTree]:
         return ({"hist": jnp.zeros((self.n_sides,), int)},)
 
-    @eqx.filter_jit
     @oopax.capture_update
     @oopax.consume_key
     def __call__(self, key: PRNGKeyArray, *args: int) -> tuple[MapTree, Array]:
