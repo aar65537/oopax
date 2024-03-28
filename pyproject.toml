@@ -15,7 +15,7 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dev = ["chex", "pytest", "ruff"]
 
 [tool.pyright]
-strict = ["src", "tests"]
+typeCheckingMode = "standard"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]

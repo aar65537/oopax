@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oopax._field import field
-from oopax._vectorize import vectorize
-from oopax.functools import (
-    auto_vmap,
-    capture_update,
-    consume_key,
-    strip_output,
-)
-from oopax.types import MapTree
+from typing import Any
 
-__all__ = [
-    "MapTree",
-    "auto_vmap",
-    "capture_update",
-    "consume_key",
-    "field",
-    "strip_output",
-    "vectorize",
-]
+import equinox as eqx
+
+
+def field(*, signature: str | None = None, **kwargs: Any) -> Any:
+    try:
+        metadata = dict(kwargs.pop("metadata"))  # safety copy
+    except KeyError:
+        metadata = {}
+
+    if "signature" in metadata:
+        msg = "Cannot use metadata with `signature` already set."
+        raise ValueError(msg)
+
+    if signature is not None:
+        metadata["signature"] = signature
+
+    return eqx.field(metadata=metadata, **kwargs)

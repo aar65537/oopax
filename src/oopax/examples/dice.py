@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from functools import partial
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
@@ -21,29 +23,22 @@ import oopax
 from oopax.types import Array, MapTree, PRNGKeyArray
 
 
-class DiceRoller(eqx.Module):
+class Dice(eqx.Module):
     key: PRNGKeyArray
-    weights: Array
     hist: Array
+    weights: Array = oopax.field(signature="(n)")
 
     def __init__(
-        self,
-        key: PRNGKeyArray,
-        *,
-        n_sides: int = 6,
-        weights: Array | None = None,
+        self, key: PRNGKeyArray, *, n_sides: int = 6, weights: Array | None = None
     ) -> None:
-        if weights is None:
-            weights = jnp.ones((n_sides,), float)
-        else:
-            n_sides = weights.shape[-1]
+        weights = jnp.ones((n_sides,), float) if weights is None else weights
 
+        self.key = key
         self.weights = jax.nn.softmax(jnp.log(weights))
-        self.key = jax.random.split(key, self.batch_shape)
-        self.hist = jnp.zeros((*self.batch_shape, n_sides), int)
+        self.hist = jnp.zeros((self.n_sides), int)
 
     @property
-    def batch_shape(self) -> tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         return self.weights.shape[:-1]
 
     @property
@@ -53,29 +48,25 @@ class DiceRoller(eqx.Module):
     @eqx.filter_jit
     @oopax.strip_output
     @oopax.capture_update
-    @oopax.auto_vmap
     def reset(self) -> tuple[MapTree]:
         return ({"hist": jnp.zeros((self.n_sides,), int)},)
 
     @eqx.filter_jit
     @oopax.capture_update
-    @oopax.auto_vmap
     @oopax.consume_key
-    def roll(self, key: PRNGKeyArray, n_rolls: int = 1) -> tuple[MapTree, Array]:
-        if n_rolls < 1:
-            msg = "n_rolls must be greater than or equal to one."
-            raise ValueError(msg)
+    def __call__(self, key: PRNGKeyArray, *args: int) -> tuple[MapTree, Array]:
+        shape = (*args, *self.shape)
+        key = jax.random.split(key, shape)
+        result = self._call(key)
+        hist = self.hist
 
-        if n_rolls == 1:
-            hist, result = self._roll(self.hist, key)
-        else:
-            keys = jax.random.split(key, n_rolls)
-            hist, result = jax.lax.scan(self._roll, self.hist, keys)
+        for index in range(self.n_sides):
+            hist = hist.at[index].add((result == index).sum())
 
         return {"hist": hist}, result
 
-    def _roll(self, hist: Array, key: PRNGKeyArray) -> tuple[Array, Array]:
-        result = jax.random.choice(
+    @partial(oopax.vectorize, signature="(2)->()")
+    def _call(self, key: PRNGKeyArray) -> Array:
+        return jax.random.choice(
             key, jnp.arange(self.n_sides, dtype=int), (), p=self.weights
         )
-        return hist.at[result].add(1), result
