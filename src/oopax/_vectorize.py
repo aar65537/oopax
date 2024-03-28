@@ -14,6 +14,7 @@
 
 import dataclasses
 from collections.abc import Callable
+from functools import wraps
 from typing import Any, Concatenate
 
 import jax.numpy as jnp
@@ -27,11 +28,12 @@ def vectorize(
     excluded: set | None = None,
     signature: str = "->()",
 ) -> Callable[Concatenate[T, P], U]:
+    @wraps(fn)
     def inner(module: T, *args: P.args, **kwargs: P.kwargs) -> U:
         _excluded = set() if excluded is None else excluded
         _signature = signature
 
-        fields = dataclasses.fields(module)  # type: ignore[reportArgumentType]
+        fields = dataclasses.fields(module)  # type: ignore
         module_args = []
         module_exclude = []
 
@@ -44,7 +46,7 @@ def vectorize(
 
         _excluded = _excluded | kwargs.keys() | {len(module_args)}
 
-        def elementary_fn(*args: Any, **kwargs: P.kwargs) -> U:  # type: ignore[reportGeneralTypeIssues]
+        def elementary_fn(*args: Any, **kwargs: P.kwargs) -> U:  # type: ignore
             _module = object.__new__(module.__class__)
 
             n_args = 0

@@ -18,7 +18,7 @@ import jax
 import jax.numpy as jnp
 
 import oopax
-from oopax.types import Array, MapTree, PRNGKeyArray
+from oopax.types import Array, PRNGKeyArray, Update
 
 
 class Dice(oopax.Module):
@@ -43,14 +43,14 @@ class Dice(oopax.Module):
     def n_sides(self) -> int:
         return self.weights.shape[-1]
 
-    @oopax.strip_output
-    @oopax.capture_update
-    def reset(self) -> tuple[MapTree]:
+    @oopax.strip
+    @oopax.update
+    def reset(self) -> tuple[Update]:
         return ({"hist": jnp.zeros((self.n_sides,), int)},)
 
-    @oopax.capture_update
-    @oopax.consume_key
-    def __call__(self, key: PRNGKeyArray, *args: int) -> tuple[MapTree, Array]:
+    @oopax.update
+    @oopax.inject_key
+    def __call__(self, key: PRNGKeyArray, *args: int) -> tuple[Update, Array]:
         shape = (*args, *self.shape)
         key = jax.random.split(key, shape)
         result = self._call(key)

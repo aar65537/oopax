@@ -13,12 +13,13 @@
 # limitations under the License.
 
 from collections.abc import Iterable, Mapping
-from typing import ParamSpec, TypeAlias, TypeVar, TypeVarTuple
+from typing import Any, ParamSpec, TypeAlias, TypeVar, TypeVarTuple
 
-from jaxtyping import Array, ArrayLike, PRNGKeyArray, PyTree
+from jaxtyping import Array, ArrayLike, PRNGKeyArray
 
-FlatTree: TypeAlias = Iterable[PyTree]
-MapTree: TypeAlias = Mapping[str, PyTree]
+ArrayTree = Array | Iterable["ArrayTree"] | Mapping[Any, "ArrayTree"]
+Update: TypeAlias = Mapping[str, ArrayTree]
+FlatUpdate: TypeAlias = Iterable[ArrayTree]
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -28,12 +29,12 @@ Ts = TypeVarTuple("Ts")
 __all__ = [
     "Array",
     "ArrayLike",
-    "FlatTree",
-    "MapTree",
+    "ArrayTree",
+    "FlatUpdate",
     "P",
     "PRNGKeyArray",
-    "PyTree",
     "T",
     "Ts",
     "U",
+    "Update",
 ]

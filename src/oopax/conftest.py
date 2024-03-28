@@ -27,4 +27,4 @@ def key() -> PRNGKeyArray:
 
 @pytest.fixture(params=[True, False], ids=["jit", "no jit"])
 def jit(request: pytest.FixtureRequest) -> bool:
-    return request.param  # type: ignore[no-any-return]
+    return request.param

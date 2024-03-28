@@ -12,25 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from equinox import Module
+from collections.abc import Callable
+from functools import wraps
 
-from oopax._field import field
-from oopax._inject import inject, inject_key
-from oopax._strip import strip
-from oopax._update import update
-from oopax._vectorize import vectorize
-from oopax.types import Array, ArrayLike, ArrayTree, Update
+from oopax.types import P, T, Ts
 
-__all__ = [
-    "Array",
-    "ArrayLike",
-    "ArrayTree",
-    "Module",
-    "Update",
-    "field",
-    "inject",
-    "inject_key",
-    "strip",
-    "update",
-    "vectorize",
-]
+
+def strip(fn: Callable[P, tuple[T, *Ts]]) -> Callable[P, T]:
+    @wraps(fn)
+    def inner(*args: P.args, **kwargs: P.kwargs) -> T:
+        return fn(*args, **kwargs)[0]
+
+    return inner

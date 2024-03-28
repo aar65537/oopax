@@ -23,7 +23,7 @@ addopts = ["--import-mode=importlib"]
 [tool.ruff.lint]
 preview = true
 select = ["ALL"]
-ignore = ["ANN401", "COM812","PD008","UP040","D"]
+ignore = ["ANN401", "COM812","PD008", "PGH003", "UP040","D"]
 
 [tool.ruff.lint.per-file-ignores]
 "local/*" = ["CPY"]
