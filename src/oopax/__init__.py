@@ -19,13 +19,14 @@ from oopax._inject import inject, inject_key
 from oopax._strip import strip
 from oopax._update import update
 from oopax._vectorize import vectorize
-from oopax.types import Array, ArrayLike, ArrayTree, Update
+from oopax.types import Array, ArrayLike, ArrayTree, PRNGKeyArray, Update
 
 __all__ = [
     "Array",
     "ArrayLike",
     "ArrayTree",
     "Module",
+    "PRNGKeyArray",
     "Update",
     "field",
     "inject",

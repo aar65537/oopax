@@ -12,6 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oopax.examples.dice import Dice
+import chex
+import equinox as eqx
 
-__all__ = ["Dice"]
+import oopax
+from oopax.testing.cache import clear_caches
+
+
+def fn() -> tuple[None]:
+    return (None,)
+
+
+def test_strip(jit: bool) -> None:
+    clear_caches()
+
+    call = oopax.strip(fn)
+    call = eqx.filter_jit(chex.assert_max_traces(call, 1)) if jit else call
+
+    for _ in range(10):
+        assert fn() == (None,)
+        assert call() is None

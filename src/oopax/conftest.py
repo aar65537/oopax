@@ -28,3 +28,10 @@ def key() -> PRNGKeyArray:
 @pytest.fixture(params=[True, False], ids=["jit", "no jit"])
 def jit(request: pytest.FixtureRequest) -> bool:
     return request.param
+
+
+@pytest.fixture(
+    params=[(), (10,), (5, 3)], ids=["shape=()", "shape=(10,)", "shape=(5,3)"]
+)
+def shape(request: pytest.FixtureRequest) -> tuple[int, ...]:
+    return request.param

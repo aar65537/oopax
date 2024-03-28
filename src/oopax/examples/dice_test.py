@@ -17,20 +17,13 @@ import equinox as eqx
 import jax.numpy as jnp
 import pytest
 
-from oopax.examples.dice import Dice
+from oopax.examples import Dice
 from oopax.testing.cache import clear_caches
 from oopax.types import Array, PRNGKeyArray
 
 
 @pytest.fixture(params=[6, 12], ids=["n_sides=6", "n_sides=12"])
 def n_sides(request: pytest.FixtureRequest) -> int:
-    return request.param
-
-
-@pytest.fixture(
-    params=[(), (10,), (5, 3)], ids=["shape=()", "shape=(10,)", "shape=(5,3)"]
-)
-def shape(request: pytest.FixtureRequest) -> tuple[int, ...]:
     return request.param
 
 
