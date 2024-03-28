@@ -16,6 +16,7 @@ from collections.abc import Callable
 from functools import partial, wraps
 from typing import Any, Concatenate
 
+import equinox as eqx
 import jax
 import jax.numpy as jnp
 
@@ -31,13 +32,11 @@ def inject(
     @wraps(fn)
     def inner(module: T, *args: P.args, **kwargs: P.kwargs) -> tuple[Update, *Ts]:
         next_attr, sub_attr = split(module, *args, **kwargs)
+        module = eqx.tree_at(lambda x: getattr(x, attr), module, None)
         update, *output = fn(module, sub_attr, *args, **kwargs)
 
         if attr in update:
-            msg = (
-                f"Update from '{fn.__qualname__}' already contains "
-                f"attribute '{attr}'."
-            )
+            msg = f"Update from '{fn.__qualname__}' contains attribute '{attr}'."
             raise ValueError(msg)
 
         update = {attr: next_attr, **update}

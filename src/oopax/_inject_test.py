@@ -29,6 +29,7 @@ class Injecter(oopax.Module):
     @oopax.update
     @oopax.inject_key
     def __call__(self, key: PRNGKeyArray) -> tuple[Update, PRNGKeyArray]:
+        assert self.key is None
         return ({}, key)
 
 
@@ -45,11 +46,11 @@ def test_inject_key(key: PRNGKeyArray, jit: bool, injecter: Injecter) -> None:
 
     for _ in range(10):
         last_key = injecter.key
-        injecter, result = call(injecter)
+        injecter, sub_key = call(injecter)
         next_key = injecter.key
 
-        assert not jnp.equal(last_key, result).all()
-        assert not jnp.equal(result, next_key).all()
+        assert not jnp.equal(last_key, sub_key).all()
+        assert not jnp.equal(sub_key, next_key).all()
         assert not jnp.equal(last_key, next_key).all()
 
     if not jit:
